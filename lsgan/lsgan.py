@@ -24,8 +24,8 @@ class LSGAN():
 
         optimizer = Adam(0.0002, 0.5)
 
-        # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
+        # todo: loss 用 mse
         self.discriminator.compile(loss='mse',
             optimizer=optimizer,
             metrics=['accuracy'])
@@ -50,9 +50,7 @@ class LSGAN():
         self.combined.compile(loss='mse', optimizer=optimizer)
 
     def build_generator(self):
-
-        model = Sequential()
-
+        model=Sequential()
         model.add(Dense(256, input_dim=self.latent_dim))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
@@ -73,9 +71,7 @@ class LSGAN():
         return Model(noise, img)
 
     def build_discriminator(self):
-
         model = Sequential()
-
         model.add(Flatten(input_shape=self.img_shape))
         model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
@@ -104,11 +100,6 @@ class LSGAN():
         fake = np.zeros((batch_size, 1))
 
         for epoch in range(epochs):
-
-            # ---------------------
-            #  Train Discriminator
-            # ---------------------
-
             # Select a random batch of images
             idx = np.random.randint(0, X_train.shape[0], batch_size)
             imgs = X_train[idx]
@@ -124,15 +115,10 @@ class LSGAN():
             d_loss_fake = self.discriminator.train_on_batch(gen_imgs, fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
-
-            # ---------------------
-            #  Train Generator
-            # ---------------------
-
             g_loss = self.combined.train_on_batch(noise, valid)
 
             # Plot the progress
-            print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
+            print("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
 
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:
