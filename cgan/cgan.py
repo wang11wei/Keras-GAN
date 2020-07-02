@@ -27,13 +27,12 @@ class CGAN():
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss=['binary_crossentropy'],
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                                   optimizer=optimizer,
+                                   metrics=['accuracy'])
 
         # Build the generator
         self.generator = self.build_generator()
 
-        # The generator takes noise and the target label as input
         # and generates the corresponding digit of that label
         noise = Input(shape=(self.latent_dim,))
         label = Input(shape=(1,))
@@ -53,9 +52,7 @@ class CGAN():
             optimizer=optimizer)
 
     def build_generator(self):
-
         model = Sequential()
-
         model.add(Dense(256, input_dim=self.latent_dim))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
@@ -76,7 +73,7 @@ class CGAN():
 
         model_input = multiply([noise, label_embedding])
         img = model(model_input)
-
+        # todo: The generator takes noise and the target label as input
         return Model([noise, label], img)
 
     def build_discriminator(self):
@@ -103,14 +100,12 @@ class CGAN():
         model_input = multiply([flat_img, label_embedding])
 
         validity = model(model_input)
-
+        # todo: The discriminator takes image and the target label as input
         return Model([img, label], validity)
 
     def train(self, epochs, batch_size=128, sample_interval=50):
-
         # Load the dataset
         (X_train, y_train), (_, _) = mnist.load_data()
-
         # Configure input
         X_train = (X_train.astype(np.float32) - 127.5) / 127.5
         X_train = np.expand_dims(X_train, axis=3)
@@ -152,7 +147,7 @@ class CGAN():
             g_loss = self.combined.train_on_batch([noise, sampled_labels], valid)
 
             # Plot the progress
-            print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
+            print("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
 
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:
@@ -172,9 +167,9 @@ class CGAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt,:,:,0], cmap='gray')
-                axs[i,j].set_title("Digit: %d" % sampled_labels[cnt])
-                axs[i,j].axis('off')
+                axs[i, j].imshow(gen_imgs[cnt, :, :, 0], cmap='gray')
+                axs[i, j].set_title("Digit: %d" % sampled_labels[cnt])
+                axs[i, j].axis('off')
                 cnt += 1
         fig.savefig("images/%d.png" % epoch)
         plt.close()

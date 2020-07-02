@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+
 class ACGAN():
     def __init__(self):
         # Input shape

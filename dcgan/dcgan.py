@@ -25,7 +25,7 @@ class DCGAN():
 
         optimizer = Adam(0.0002, 0.5)
 
-        # Build and compile the discriminator
+        # todo: 采用卷及网络代替全连接层 MLP，通过枚举来找到一个相对好的网络结果
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
             optimizer=optimizer,
@@ -50,9 +50,7 @@ class DCGAN():
         self.combined.compile(loss='binary_crossentropy', optimizer=optimizer)
 
     def build_generator(self):
-
         model = Sequential()
-
         model.add(Dense(128 * 7 * 7, activation="relu", input_dim=self.latent_dim))
         model.add(Reshape((7, 7, 128)))
         model.add(UpSampling2D())

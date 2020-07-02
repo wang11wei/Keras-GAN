@@ -14,7 +14,8 @@ import sys
 
 import numpy as np
 
-class LSGAN():
+
+class LSGAN:
     def __init__(self):
         self.img_rows = 28
         self.img_cols = 28
@@ -27,8 +28,8 @@ class LSGAN():
         self.discriminator = self.build_discriminator()
         # todo: loss 用 mse
         self.discriminator.compile(loss='mse',
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                                   optimizer=optimizer,
+                                   metrics=['accuracy'])
 
         # Build the generator
         self.generator = self.build_generator()

@@ -27,6 +27,7 @@ class WGAN():
         # Following parameter and optimizer set as recommended in paper
         self.n_critic = 5
         self.clip_value = 0.01
+        # todo: 修改了判别器
         optimizer = RMSprop(lr=0.00005)
 
         # Build and compile the critic
@@ -54,13 +55,16 @@ class WGAN():
             optimizer=optimizer,
             metrics=['accuracy'])
 
+    # def _gan_loss(self, logits_real, logits_fake, feature_real, feature_fake, use_features=False):
+    #     # https://github.com/shekkizh/WassersteinGAN.tensorflow/blob/master/models/GAN_models.py
+    #     self.discriminator_loss = tf.reduce_mean(logits_real - logits_fake)
+    #     self.gen_loss = tf.reduce_mean(logits_fake)
     def wasserstein_loss(self, y_true, y_pred):
+        # todo: 这里的 loss function 似乎不对劲
         return K.mean(y_true * y_pred)
 
     def build_generator(self):
-
         model = Sequential()
-
         model.add(Dense(128 * 7 * 7, activation="relu", input_dim=self.latent_dim))
         model.add(Reshape((7, 7, 128)))
         model.add(UpSampling2D())
@@ -72,19 +76,16 @@ class WGAN():
         model.add(BatchNormalization(momentum=0.8))
         model.add(Activation("relu"))
         model.add(Conv2D(self.channels, kernel_size=4, padding="same"))
+        # todo: 不使用 sigmoid
         model.add(Activation("tanh"))
-
         model.summary()
 
         noise = Input(shape=(self.latent_dim,))
         img = model(noise)
-
         return Model(noise, img)
 
     def build_critic(self):
-
         model = Sequential()
-
         model.add(Conv2D(16, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
@@ -147,12 +148,12 @@ class WGAN():
                 d_loss_fake = self.critic.train_on_batch(gen_imgs, fake)
                 d_loss = 0.5 * np.add(d_loss_fake, d_loss_real)
 
-                # Clip critic weights
+                # todo: 每次更新判别器的参数之后把它们的绝对值截断到不超过一个固定常数 c
+                # 这个操作可以学一下
                 for l in self.critic.layers:
                     weights = l.get_weights()
                     weights = [np.clip(w, -self.clip_value, self.clip_value) for w in weights]
                     l.set_weights(weights)
-
 
             # ---------------------
             #  Train Generator
@@ -161,7 +162,7 @@ class WGAN():
             g_loss = self.combined.train_on_batch(noise, valid)
 
             # Plot the progress
-            print ("%d [D loss: %f] [G loss: %f]" % (epoch, 1 - d_loss[0], 1 - g_loss[0]))
+            print("%d [D loss: %f] [G loss: %f]" % (epoch, 1 - d_loss[0], 1 - g_loss[0]))
 
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:

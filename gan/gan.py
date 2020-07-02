@@ -50,9 +50,7 @@ class GAN():
 
 
     def build_generator(self):
-
         model = Sequential()
-
         model.add(Dense(256, input_dim=self.latent_dim))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
@@ -73,9 +71,7 @@ class GAN():
         return Model(noise, img)
 
     def build_discriminator(self):
-
         model = Sequential()
-
         model.add(Flatten(input_shape=self.img_shape))
         model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
